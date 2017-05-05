@@ -73,11 +73,11 @@ def parse_xml(settings):
                 if song.album:
                     handle.write(converttounicode(song.album))
                 handle.write(u'",\n    "albumart": "')
-                #album_path = os.path.dirname(path)
-                #short_path = album_path.replace(settings['replacement'], '')
-                handle.write(u'/albumart?web=none')
-                #handle.write(u'/albumart?web=' + urllib.quote(short_path) +
-                #             u'/large&path=' + urllib.quote(album_path.encode('ascii', 'ignore')) + u'&icon=fa-dot-circle-o')
+                album_path = os.path.dirname(path)
+                short_path = album_path.replace(settings['replacement'], '')
+                #handle.write(u'/albumart?web=none')
+                handle.write(u'/albumart?web=' + urllib.quote(short_path.encode('ascii', 'ignore')) +
+                             u'/large&path=' + urllib.quote(album_path.encode('ascii', 'ignore')) + u'&icon=fa-dot-circle-o')
                 handle.write(u'",\n    "uri": "')
                 handle.write(path + u'"\n  }')
                 if path == song.location:
