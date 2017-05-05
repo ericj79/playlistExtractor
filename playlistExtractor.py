@@ -15,9 +15,9 @@ def parse_config(filename):
     parser.read(filename)
     config = {}
     config['xmlFile'] = parser.get('paths', 'xmlPath')
-    config['outputDir'] = converttounicode(parser.get('paths', 'outputDir'))
-    config['pattern'] = converttounicode(parser.get('patterns', 'old'))
-    config['replacement'] = converttounicode(parser.get('patterns', 'new'))
+    config['outputDir'] = parser.get('paths', 'outputDir')
+    config['pattern'] = parser.get('patterns', 'old')
+    config['replacement'] = parser.get('patterns', 'new')
     config['whiteList'] = []
     playlists = dict(parser.items('playlists'))
     for value in playlists.values():
@@ -33,6 +33,15 @@ def converttounicode(orig):
         return orig.decode('utf8')
     else:
         return u""
+
+def converttobytestr(orig):
+    """Make sure this thing is a byte string"""
+    if isinstance(orig, unicode):
+        return orig.encode('ascii', 'xmlcharrefreplace').replace('"', '\\"')
+    elif isinstance(orig, str):
+        return orig.replace('"', '\\"')
+    else:
+        return ''
 
 
 def whatisthis(s):
@@ -51,38 +60,38 @@ def parse_xml(settings):
     for name in playlists:
         if name in settings['whiteList']:
             playlist = data.getPlaylist(name)
-            handle = io.open(settings['outputDir'] +
-                             '/' + name, 'w', encoding='utf8')
-            handle.write(u'[')
+            handle = open(settings['outputDir'] +
+                             '/' + name, 'w')
+            handle.write('[')
             first = True
             for song in playlist.tracks:
                 if first:
                     first = False
                 else:
-                    handle.write(u',')
-                path = converttounicode(song.location).replace(
+                    handle.write(',')
+                path = converttobytestr(song.location).replace(
                     settings['pattern'], settings['replacement'])
                 handle.write(
-                    u'\n  {\n    "service": "mpd",\n    "type": "song",\n    "title" : "')
+                    '\n  {\n    "service": "mpd",\n    "type": "song",\n    "title" : "')
                 if song.name:
-                    handle.write(converttounicode(song.name))
-                handle.write(u'",\n    "artist": "')
+                    handle.write(converttobytestr(song.name))
+                handle.write('",\n    "artist": "')
                 if song.artist:
-                    handle.write(converttounicode(song.artist))
-                handle.write(u'",\n    "album": "')
+                    handle.write(converttobytestr(song.artist))
+                handle.write('",\n    "album": "')
                 if song.album:
-                    handle.write(converttounicode(song.album))
-                handle.write(u'",\n    "albumart": "')
+                    handle.write(converttobytestr(song.album))
+                handle.write('",\n    "albumart": "')
                 album_path = os.path.dirname(path)
                 short_path = album_path.replace(settings['replacement'], '')
-                #handle.write(u'/albumart?web=none')
-                handle.write(u'/albumart?web=' + urllib.quote(short_path.encode('ascii', 'ignore')) +
-                             u'/large&path=' + urllib.quote(album_path.encode('ascii', 'ignore')) + u'&icon=fa-dot-circle-o')
-                handle.write(u'",\n    "uri": "')
-                handle.write(path + u'"\n  }')
+                #handle.write('/albumart?web=none')
+                handle.write('/albumart?web=' + urllib.quote(short_path) +
+                             '/large&path=' + urllib.quote(album_path) + '&icon=fa-dot-circle-o')
+                handle.write('",\n    "uri": "')
+                handle.write(path + '"\n  }')
                 if path == song.location:
                     print 'Did not match: ' + song.location
-            handle.write(u'\n]\n')
+            handle.write('\n]\n')
             handle.close()
 
 
