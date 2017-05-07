@@ -3,8 +3,6 @@
 import ConfigParser
 import urllib
 import os
-import io
-import unicodedata
 from pyItunes import Library
 
 
@@ -15,6 +13,19 @@ def parse_config(filename):
     parser.read(filename)
     config = {}
     config['xmlFile'] = parser.get('paths', 'xmlPath')
+    timestamp = 0
+    if parser.has_option('paths', 'xmlPathTimestamp'):
+        timestamp = parser.getfloat('paths', 'xmlPathTimestamp')
+
+    filetime = os.path.getmtime(config['xmlFile'])
+    if filetime > timestamp:
+        parser.set('paths', 'xmlPathTimestamp', filetime)
+        filehandle = open(filename, 'w')
+        parser.write(filehandle)
+        filehandle.close()
+    else:
+        exit()
+
     config['outputDir'] = parser.get('paths', 'outputDir')
     config['pattern'] = parser.get('patterns', 'old')
     config['replacement'] = parser.get('patterns', 'new')
@@ -23,16 +34,6 @@ def parse_config(filename):
     for value in playlists.values():
         config['whiteList'].append(value)
     return config
-
-
-def converttounicode(orig):
-    """Make sure this thing is a unicode string"""
-    if isinstance(orig, unicode):
-        return orig
-    elif isinstance(orig, str):
-        return orig.decode('utf8')
-    else:
-        return u""
 
 def converttobytestr(orig):
     """Make sure this thing is a byte string"""
@@ -43,16 +44,6 @@ def converttobytestr(orig):
     else:
         return ''
 
-
-def whatisthis(s):
-    if isinstance(s, str):
-        print "ordinary string"
-    elif isinstance(s, unicode):
-        print "unicode string"
-    else:
-        print "not a string"
-
-
 def parse_xml(settings):
     """Parse the XML file for the wanted playlists and write the data to a file."""
     data = Library(settings['xmlFile'])
@@ -61,7 +52,7 @@ def parse_xml(settings):
         if name in settings['whiteList']:
             playlist = data.getPlaylist(name)
             handle = open(settings['outputDir'] +
-                             '/' + name, 'w')
+                          '/' + name, 'w')
             handle.write('[')
             first = True
             for song in playlist.tracks:
@@ -84,7 +75,7 @@ def parse_xml(settings):
                 handle.write('",\n    "albumart": "')
                 album_path = os.path.dirname(path)
                 short_path = album_path.replace(settings['replacement'], '')
-                #handle.write('/albumart?web=none')
+                # handle.write('/albumart?web=none')
                 handle.write('/albumart?web=' + urllib.quote(short_path) +
                              '/large&path=' + urllib.quote(album_path) + '&icon=fa-dot-circle-o')
                 handle.write('",\n    "uri": "')
