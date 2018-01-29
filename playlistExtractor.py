@@ -3,7 +3,7 @@
 import ConfigParser
 import urllib
 import os
-from libpyIitunes import Library
+from libpytunes import Library
 
 
 def parse_config(filename):
@@ -86,6 +86,7 @@ def parse_xml(settings):
                     print 'Did not match: ' + song.location
             handle.write('\n]\n')
             handle.close()
+
 
 def main():
     """Main function"""
