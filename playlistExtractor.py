@@ -3,7 +3,7 @@
 import ConfigParser
 import urllib
 import os
-from pyItunes import Library
+from libpyIitunes import Library
 
 
 def parse_config(filename):
@@ -35,6 +35,7 @@ def parse_config(filename):
         config['whiteList'].append(value)
     return config
 
+
 def converttobytestr(orig):
     """Make sure this thing is a byte string"""
     if isinstance(orig, unicode):
@@ -43,6 +44,7 @@ def converttobytestr(orig):
         return orig.replace('"', '\\"')
     else:
         return ''
+
 
 def parse_xml(settings):
     """Parse the XML file for the wanted playlists and write the data to a file."""
@@ -85,10 +87,12 @@ def parse_xml(settings):
             handle.write('\n]\n')
             handle.close()
 
-
 def main():
     """Main function"""
     settings = parse_config('settings.cfg')
+
+    # check the modified time of the file to see if we have an update
+    statbuf = os.stat(settings['xmlFile'])
     parse_xml(settings)
 
 
