@@ -12,4 +12,4 @@ Then to install the module:
 sudo pip install git+https://github.com/liamks/libpytunes.git
 
 An example crontab entry is:
-_/2 9-21 _ \* \* cd /home/volumio/playlistExtractor && nice -10 python playlistExtractor.py
+\*/2 9-21 \* \* \* cd /home/volumio/playlistExtractor && nice -10 python playlistExtractor.py
